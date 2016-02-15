@@ -464,12 +464,10 @@ es:
       alt: Icono se hace
       description: Si la propuesta es aceptada mayoritariamente, el Ayuntamiento la asume como propia y se hace.
       title: Se hace
-    highlights: 'Portada: '
     proposal:
       alt: Icono propones
       description: Espacio abierto para propuestas ciudadanas sobre el tipo de ciudad en el que queremos vivir.
       title: Propones
-    signed_in_home_title: Actividad reciente
     welcome:
       go_to_index: Ver propuestas
       title: Empieza a participar

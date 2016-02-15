@@ -463,12 +463,10 @@ en:
       alt: Icon it gets done
       description: If the proposal is accepted by the majority, the City Council accepts it as its own and it gets done.
       title: It gets done
-    highlights: 'Highlights: '
     proposal:
       alt: Icon propose
       description: Open space for citizen proposals about the kind of city we want to live in.
       title: You propose
-    signed_in_home_title: Recent activity
     welcome:
       go_to_index: See proposals and debates
       title: Participate

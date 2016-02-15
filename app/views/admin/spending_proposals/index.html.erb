@@ -19,14 +19,14 @@
               accept_admin_spending_proposal_path(spending_proposal, request.query_parameters),
               method: :put,
               data: { confirm: t("admin.actions.confirm") },
-              class: "button radius tiny success no-margin" %>
+              class: "button small success no-margin" %>
         <% end %>
         <% unless spending_proposal.rejected? %>
           <%= link_to t("admin.spending_proposals.actions.reject"),
                 reject_admin_spending_proposal_path(spending_proposal, request.query_parameters),
                 method: :put,
                 data: { confirm: t("admin.actions.confirm") },
-                class: "button radius tiny warning right" %>
+                class: "button small warning float-right" %>
         <% end %>
       </td>
     </tr>
