@@ -45,11 +45,12 @@ $line-height:         rem-calc(24);
 // 02. Colors
 // - - - - - - - - - - - - - - - - - - - - - - - - -
 
-$brand:             #004A83;
+$brand:             #653268;
 $body:              #E9E9E9;
 $background:        #EDEFF0;
 $border:            #DEE0E3;
 $dark:              darken($brand, 10%);
+$subnavigation-bg:  #98C1B5;
 
 $text:              #222222;
 $text-medium:       #999999;
@@ -81,8 +82,9 @@ $budget:            #454372;
 
 $highlight:         #E7F2FC;
 $featured:          #FED900;
+$featured:	    #123456;
 
-$footer-bg:         #DEE0E2;
+$footer-bg:         #E6DBE5;
 $footer-color:      #171819;
 $footer-link:       #454A4C;
 $footer-border:     #BFC1C3;
