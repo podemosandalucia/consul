@@ -20,9 +20,21 @@
       </div>
     </div>
     <div class="small-12 medium-5 column">
+      <%
+        up_time = Time.strptime('25-FEB-16 18.20.00', '%d-%b-%y %H.%M.%S')
+        if (up_time..(up_time + 4.hours)).cover? Time.now.in_time_zone
+       %>
+         <div class="text-right">
+           <span class="label round alert">EN DIRECTO</span>
+         </div>
+         <div class="flex-video">
+           <iframe width="560" height="315" src="https://www.youtube.com/embed/z2HP9cm-Jvg?rel=0" frameborder="0" allowfullscreen></iframe>
+         </div>
+      <% else %>
       <div class="flex-video">
         <iframe width="560" height="315" src="https://www.youtube.com/embed/2PisFJRfDj4?rel=0" frameborder="0" allowfullscreen title="Proceso Participativo #decideplazaespaña"></iframe>
       </div>
+      <% end %>
     </div>
   </div>
 </div>
@@ -110,6 +122,11 @@
         <%= link_to "Memoria síntesis <small>(PDF | 3,6Mb)</small>".html_safe,
                     "/docs/00_memoria_sintesis.pdf",
                     title: "Memoria síntesis (PDF | 3,6Mb)", target: "_blank" %>
+      </li>
+      <li>
+        <%= link_to "Valoración de costes <small>(PDF | 49Kb)</small>".html_safe,
+                    "/docs/valoracion_costes.pdf",
+                    title: "Valoración de costes (PDF | 49Kb)", target: "_blank" %>
       </li>
       <li>
         <%= link_to "Estudio de la evolución histórica <small>(PDF | 7,2Mb)</small>".html_safe,

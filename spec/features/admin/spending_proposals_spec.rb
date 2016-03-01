@@ -19,97 +19,139 @@ feature 'Admin spending proposals' do
     expect(page).to have_content(spending_proposal.title)
   end
 
-  scenario 'Accept from index' do
-    spending_proposal = create(:spending_proposal)
+  scenario 'Index shows assignments info' do
+    spending_proposal1 = create(:spending_proposal)
+    spending_proposal2 = create(:spending_proposal)
+    spending_proposal3 = create(:spending_proposal)
+
+    valuator1 = create(:valuator, user: create(:user, username: 'Olga'))
+    valuator2 = create(:valuator, user: create(:user, username: 'Miriam'))
+    admin = create(:administrator, user: create(:user, username: 'Gema'))
+
+    spending_proposal1.valuators << valuator1
+    spending_proposal2.valuator_ids = [valuator1.id, valuator2.id]
+    spending_proposal3.update({administrator_id: admin.id})
+
     visit admin_spending_proposals_path
 
-    click_link 'Accept'
+    within("#spending_proposal_#{spending_proposal1.id}") do
+      expect(page).to have_content("No admin assigned")
+      expect(page).to have_content("Olga")
+    end
 
-    expect(page).to_not have_content(spending_proposal.title)
+    within("#spending_proposal_#{spending_proposal2.id}") do
+      expect(page).to have_content("No admin assigned")
+      expect(page).to have_content("2 valuators assigned")
+    end
 
-    click_link 'Accepted'
-    expect(page).to have_content(spending_proposal.title)
-
-    expect(spending_proposal.reload).to be_accepted
+    within("#spending_proposal_#{spending_proposal3.id}") do
+      expect(page).to have_content("Gema")
+      expect(page).to have_content("No valuators assigned")
+    end
   end
 
-  scenario 'Reject from index' do
-    spending_proposal = create(:spending_proposal)
+  scenario "Index filtering by geozone", :js do
+    geozone = create(:geozone, name: "District 9")
+    create(:spending_proposal, title: "Realocate visitors", geozone: geozone)
+    create(:spending_proposal, title: "Destroy the city")
+
     visit admin_spending_proposals_path
+    expect(page).to have_link("Realocate visitors")
+    expect(page).to have_link("Destroy the city")
 
-    click_link 'Reject'
+    select "District 9", from: "geozone_id"
 
-    expect(page).to_not have_content(spending_proposal.title)
+    expect(page).to have_link("Realocate visitors")
+    expect(page).to_not have_link("Destroy the city")
 
-    click_link('Rejected')
-    expect(page).to have_content(spending_proposal.title)
+    select "All city", from: "geozone_id"
 
-    expect(spending_proposal.reload).to be_rejected
+    expect(page).to have_link("Destroy the city")
+    expect(page).to_not have_link("Realocate visitors")
+
+    select "All zones", from: "geozone_id"
+    expect(page).to have_link("Realocate visitors")
+    expect(page).to have_link("Destroy the city")
   end
 
   scenario "Current filter is properly highlighted" do
+    filters_links = {'all' => 'All',
+                     'without_admin' => 'Without assigned admin',
+                     'without_valuators' => 'Without valuator',
+                     'valuating' => 'Under valuation',
+                     'valuation_finished' => 'Valuation finished'}
+
     visit admin_spending_proposals_path
-    expect(page).to_not have_link('Unresolved')
-    expect(page).to have_link('Accepted')
-    expect(page).to have_link('Rejected')
 
-    visit admin_spending_proposals_path(filter: 'unresolved')
-    expect(page).to_not have_link('Unresolved')
-    expect(page).to have_link('Accepted')
-    expect(page).to have_link('Rejected')
+    expect(page).to_not have_link(filters_links.values.first)
+    filters_links.keys.drop(1).each { |filter| expect(page).to have_link(filters_links[filter]) }
 
-    visit admin_spending_proposals_path(filter: 'accepted')
-    expect(page).to have_link('Unresolved')
-    expect(page).to_not have_link('Accepted')
-    expect(page).to have_link('Rejected')
+    filters_links.each_pair do |current_filter, link|
+      visit admin_spending_proposals_path(filter: current_filter)
 
-    visit admin_spending_proposals_path(filter: 'rejected')
-    expect(page).to have_link('Accepted')
-    expect(page).to have_link('Unresolved')
-    expect(page).to_not have_link('Rejected')
+      expect(page).to_not have_link(link)
+
+      (filters_links.keys - [current_filter]).each do |filter|
+        expect(page).to have_link(filters_links[filter])
+      end
+    end
   end
 
-  scenario "Filtering proposals" do
-    create(:spending_proposal, title: "Recent spending proposal")
-    create(:spending_proposal, title: "Good spending proposal", resolution: "accepted")
-    create(:spending_proposal, title: "Bad spending proposal", resolution: "rejected")
+  scenario "Index filtering by assignment status" do
+    assigned = create(:spending_proposal, title: "Assigned idea", administrator: create(:administrator))
+    valuating = create(:spending_proposal, title: "Evaluating...")
+    valuating.valuators << create(:valuator)
 
-    visit admin_spending_proposals_path(filter: 'unresolved')
-    expect(page).to have_content('Recent spending proposal')
-    expect(page).to_not have_content('Good spending proposal')
-    expect(page).to_not have_content('Bad spending proposal')
+    visit admin_spending_proposals_path(filter: 'all')
 
-    visit admin_spending_proposals_path(filter: 'accepted')
-    expect(page).to have_content('Good spending proposal')
-    expect(page).to_not have_content('Recent spending proposal')
-    expect(page).to_not have_content('Bad spending proposal')
+    expect(page).to have_content("Assigned idea")
+    expect(page).to have_content("Evaluating...")
 
-    visit admin_spending_proposals_path(filter: 'rejected')
-    expect(page).to have_content('Bad spending proposal')
-    expect(page).to_not have_content('Good spending proposal')
-    expect(page).to_not have_content('Recent spending proposal')
+    visit admin_spending_proposals_path(filter: 'without_admin')
+
+    expect(page).to have_content("Evaluating...")
+    expect(page).to_not have_content("Assigned idea")
+
+    visit admin_spending_proposals_path(filter: 'without_valuators')
+
+    expect(page).to have_content("Assigned idea")
+    expect(page).to_not have_content("Evaluating...")
   end
 
-  scenario "Action links remember the pagination setting and the filter" do
-    per_page = Kaminari.config.default_per_page
-    (per_page + 2).times { create(:spending_proposal, resolution: "accepted") }
+  scenario "Index filtering by valuation status" do
+    valuating = create(:spending_proposal, title: "Ongoing valuation")
+    valuated = create(:spending_proposal, title: "Old idea", valuation_finished: true)
+    valuating.valuators << create(:valuator)
+    valuated.valuators << create(:valuator)
 
-    visit admin_spending_proposals_path(filter: 'accepted', page: 2)
+    visit admin_spending_proposals_path(filter: 'all')
 
-    click_on('Reject', match: :first, exact: true)
+    expect(page).to have_content("Ongoing valuation")
+    expect(page).to have_content("Old idea")
 
-    expect(current_url).to include('filter=accepted')
-    expect(current_url).to include('page=2')
+    visit admin_spending_proposals_path(filter: 'valuating')
+
+    expect(page).to have_content("Ongoing valuation")
+    expect(page).to_not have_content("Old idea")
+
+    visit admin_spending_proposals_path(filter: 'valuation_finished')
+
+    expect(page).to_not have_content("Ongoing valuation")
+    expect(page).to have_content("Old idea")
   end
 
   scenario 'Show' do
+    administrator = create(:administrator, user: create(:user, username: 'Ana', email: 'ana@admins.org'))
+    valuator = create(:valuator, user: create(:user, username: 'Rachel', email: 'rachel@valuators.org'))
     spending_proposal = create(:spending_proposal,
                                 geozone: create(:geozone),
                                 association_name: 'People of the neighbourhood',
                                 price: 1234.56,
-                                legal: true,
                                 feasible: false,
-                                explanation: "It's impossible")
+                                feasible_explanation: 'It is impossible',
+                                administrator: administrator)
+    spending_proposal.valuators << valuator
+
     visit admin_spending_proposals_path
 
     click_link spending_proposal.title
@@ -119,38 +161,72 @@ feature 'Admin spending proposals' do
     expect(page).to have_content(spending_proposal.author.name)
     expect(page).to have_content(spending_proposal.association_name)
     expect(page).to have_content(spending_proposal.geozone.name)
-    expect(page).to have_content("1234.56")
-    expect(page).to have_content("Legal")
-    expect(page).to have_content("Not feasible")
-    expect(page).to have_content("It's impossible")
+    expect(page).to have_content('1234.56')
+    expect(page).to have_content('Not feasible')
+    expect(page).to have_content('It is impossible')
+    expect(page).to have_select('spending_proposal[administrator_id]', selected: 'Ana (ana@admins.org)')
+
+    within('#assigned_valuators') do
+      expect(page).to have_content('Rachel (rachel@valuators.org)')
+    end
   end
 
-  scenario 'Accept from show' do
+  scenario 'Administrator assigment', :js do
     spending_proposal = create(:spending_proposal)
+
+    administrator = create(:administrator, user: create(:user, username: 'Ana', email: 'ana@admins.org'))
+
     visit admin_spending_proposal_path(spending_proposal)
 
-    click_link 'Accept'
+    expect(page).to have_select('spending_proposal[administrator_id]', selected: 'Undefined')
+    select 'Ana (ana@admins.org)', from: 'spending_proposal[administrator_id]'
 
-    expect(page).to_not have_content(spending_proposal.title)
+    visit admin_spending_proposals_path
+    click_link spending_proposal.title
 
-    click_link 'Accepted'
-    expect(page).to have_content(spending_proposal.title)
-
-    expect(spending_proposal.reload).to be_accepted
+    expect(page).to have_select('spending_proposal[administrator_id]', selected: 'Ana (ana@admins.org)')
   end
 
-  scenario 'Reject from show' do
+  scenario 'Valuators assigments', :js do
     spending_proposal = create(:spending_proposal)
+
+    valuator1 = create(:valuator, user: create(:user, username: 'Valentina', email: 'v1@valuators.org'))
+    valuator2 = create(:valuator, user: create(:user, username: 'Valerian', email: 'v2@valuators.org'))
+    valuator3 = create(:valuator, user: create(:user, username: 'Val', email: 'v3@valuators.org'))
+
     visit admin_spending_proposal_path(spending_proposal)
 
-    click_link 'Reject'
+    within('#assigned_valuators') do
+      expect(page).to have_content('Undefined')
+      expect(page).to_not have_content('Valentina (v1@valuators.org)')
+      expect(page).to_not have_content('Valerian (v2@valuators.org)')
+      expect(page).to_not have_content('Val (v3@valuators.org)')
+    end
 
-    expect(page).to_not have_content(spending_proposal.title)
+    visit admin_spending_proposal_path(spending_proposal)
 
-    click_link('Rejected')
-    expect(page).to have_content(spending_proposal.title)
+    click_link "Assign valuators"
 
-    expect(spending_proposal.reload).to be_rejected
+    within('#valuators-assign-list') do
+      check "valuator_ids_#{valuator1.id}"
+      check "valuator_ids_#{valuator3.id}"
+    end
+
+    within('#assigned_valuators') do
+      expect(page).to have_content('Valentina (v1@valuators.org)')
+      expect(page).to have_content('Val (v3@valuators.org)')
+      expect(page).to_not have_content('Undefined')
+      expect(page).to_not have_content('Valerian (v2@valuators.org)')
+    end
+
+    visit admin_spending_proposal_path(spending_proposal)
+
+    within('#assigned_valuators') do
+      expect(page).to have_content('Valentina (v1@valuators.org)')
+      expect(page).to have_content('Val (v3@valuators.org)')
+      expect(page).to_not have_content('Undefined')
+      expect(page).to_not have_content('Valerian (v2@valuators.org)')
+    end
   end
 
 end

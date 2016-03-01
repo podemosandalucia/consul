@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160222145100) do
+ActiveRecord::Schema.define(version: 20160225171916) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -321,20 +321,23 @@ ActiveRecord::Schema.define(version: 20160222145100) do
     t.text     "description"
     t.integer  "author_id"
     t.string   "external_url"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
+    t.datetime "created_at",                                  null: false
+    t.datetime "updated_at",                                  null: false
     t.integer  "geozone_id"
-    t.string   "resolution"
     t.float    "price"
-    t.boolean  "legal"
     t.boolean  "feasible"
-    t.text     "explanation"
     t.string   "association_name"
+    t.text     "price_explanation"
+    t.text     "feasible_explanation"
+    t.text     "internal_comments"
+    t.boolean  "valuation_finished",          default: false
+    t.text     "explanations_log"
+    t.integer  "administrator_id"
+    t.integer  "valuation_assignments_count", default: 0
   end
 
   add_index "spending_proposals", ["author_id"], name: "index_spending_proposals_on_author_id", using: :btree
   add_index "spending_proposals", ["geozone_id"], name: "index_spending_proposals_on_geozone_id", using: :btree
-  add_index "spending_proposals", ["resolution"], name: "index_spending_proposals_on_resolution", using: :btree
 
   create_table "survey_answers", force: :cascade do |t|
     t.string   "survey_code"
@@ -454,6 +457,13 @@ ActiveRecord::Schema.define(version: 20160222145100) do
   add_index "users", ["geozone_id"], name: "index_users_on_geozone_id", using: :btree
   add_index "users", ["hidden_at"], name: "index_users_on_hidden_at", using: :btree
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
+
+  create_table "valuation_assignments", force: :cascade do |t|
+    t.integer  "valuator_id"
+    t.integer  "spending_proposal_id"
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+  end
 
   create_table "valuators", force: :cascade do |t|
     t.integer "user_id"

@@ -1,27 +1,42 @@
 class Admin::SpendingProposalsController < Admin::BaseController
   include FeatureFlags
+  feature_flag :spending_proposals
 
-  has_filters %w{unresolved accepted rejected}, only: :index
+  has_filters %w{all without_admin without_valuators valuating valuation_finished}, only: :index
 
   load_and_authorize_resource
 
-  feature_flag :spending_proposals
-
   def index
-    @spending_proposals = @spending_proposals.includes([:geozone]).send(@current_filter).order(created_at: :desc).page(params[:page])
+    @spending_proposals = geozone_filter(params[:geozone_id].presence).includes(:geozone, administrator: :user, valuators: :user).send(@current_filter).order(created_at: :desc).page(params[:page])
   end
 
   def show
+    @admins = Administrator.includes(:user).all
+    @valuators = Valuator.includes(:user).all.order("users.username ASC")
   end
 
-  def accept
-    @spending_proposal.accept
-    redirect_to request.query_parameters.merge(action: :index)
+  def assign_admin
+    @spending_proposal.update(params.require(:spending_proposal).permit(:administrator_id))
+    render nothing: true
   end
 
-  def reject
-    @spending_proposal.reject
-    redirect_to request.query_parameters.merge(action: :index)
+  def assign_valuators
+    params[:spending_proposal] ||= {}
+    params[:spending_proposal][:valuator_ids] ||= []
+    @spending_proposal.update(params.require(:spending_proposal).permit(valuator_ids: []))
   end
+
+  private
+
+    def geozone_filter(geozone)
+      case geozone
+      when nil
+        @spending_proposals
+      when 'all'
+        @spending_proposals.where(geozone_id: nil)
+      else
+        @spending_proposals.where(geozone_id: params[:geozone_id].presence)
+      end
+    end
 
 end

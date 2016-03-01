@@ -57,7 +57,7 @@ es:
       officials: Cargos públicos
       organizations: Organizaciones
       settings: Configuración global
-      spending_proposals: Propuestas de gasto
+      spending_proposals: Propuestas de inversión
       stats: Estadísticas
     moderators:
       index:
@@ -137,29 +137,43 @@ es:
         button: Buscar
         placeholder: Buscar usuario por nombre o email
     spending_proposals:
-      actions:
-        accept: Aceptar
-        reject: Rechazar
       index:
-        filter: Filtro
+        geozone_filter_all: Todos los ámbitos de actuación
         filters:
-          accepted: Aceptadas
-          rejected: Rechazadas
-          unresolved: Sin resolver
-        title: Propuestas de gasto para presupuestos participativos
+          all: Todas
+          without_admin: Sin administrador asignado
+          without_valuators: Sin evaluador
+          valuating: En evaluación
+          valuation_finished: Evaluación finalizada
+        title: Propuestas de inversión para presupuestos participativos
+        admin_assigned: Administrador asignado
+        no_admin_assigned: Sin admin asignado
+        valuators_assigned:
+          one: Evaluador asignado
+          other: "%{count} evaluadores asignados"
+        no_valuators_assigned: Sin evaluador
       show:
+        heading: Propuesta de inversión
+        info: Datos de envío
         association_name: Asociación
         by: Enviada por
+        sent: Fecha de creación
         geozone: Ámbito
         dossier: Informe
         price: Coste
-        legality: Legalidad
-        legal: Legal
-        not_legal: No legal
+        currency: "€"
         feasibility: Viabilidad
         feasible: Viable
         not_feasible: No viable
         undefined: Sin definir
+        valuation_finished: Informe finalizado
+        internal_comments: Commentarios internos
+        responsibles: Responsables
+        assigned_admin: Administrador asignado
+        assigned_valuators: Evaluadores asignados
+        assign_valuators: Asignar evaluadores
+        no_valuators: No hay ningún usuario evaluador
+        assign: Asignar
     stats:
       show:
         stats_title: Estadísticas

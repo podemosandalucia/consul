@@ -137,29 +137,43 @@ en:
         button: Search
         placeholder: Search user by name or email'
     spending_proposals:
-      actions:
-        accept: Accept
-        reject: Reject
       index:
-        filter: Filter
+        geozone_filter_all: All zones
         filters:
-          accepted: Accepted
-          rejected: Rejected
-          unresolved: Unresolved
-        title: Spending proposals for participatory budgeting
+          all: All
+          without_admin: Without assigned admin
+          without_valuators: Without valuator
+          valuating: Under valuation
+          valuation_finished: Valuation finished
+        title: Investment projects for participatory budgeting
+        admin_assigned: Assigned administrator
+        no_admin_assigned: No admin assigned
+        valuators_assigned:
+          one: Assigned valuator
+          other: "%{count} valuators assigned"
+        no_valuators_assigned: No valuators assigned
       show:
+        heading: Investment project
+        info: Author info
         association_name: Asociación
         by: Sent by
+        sent: Sent at
         geozone: Scope
         dossier: Dossier
         price: Price
-        legality: Legality
-        legal: Legal
-        not_legal: Not legal
+        currency: "€"
         feasibility: Feasibility
         feasible: Feasible
         not_feasible: Not feasible
         undefined: Undefined
+        valuation_finished: Valuation finished
+        internal_comments: Internal comments
+        responsibles: Responsibles
+        assigned_admin: Assigned admin
+        assigned_valuators: Assigned valuators
+        assign_valuators: Assign valuators
+        no_valuators: There is not any valuator user
+        assign: Assign
     stats:
       show:
         stats_title: Stats
